@@ -35,8 +35,14 @@ fun getFlags(options: List<String> = listOf()): Int {
   return flags
 }
 
-fun getTagMap(arg: Tag): Map<String, Any?> {
+fun getTagMap(arg: Tag, mifareEmulation: Boolean?): Map<String, Any?> {
   val data = mutableMapOf<String, Any?>()
+  var activateMifare = true;
+  //if (mifareEmulation != null) emulated = mifareEmulation
+  if (arg.techList.contains(IsoDep::class.java.name)){
+    activateMifare = false
+    if (mifareEmulation != null) activateMifare = mifareEmulation
+  }
 
   arg.techList.forEach { tech ->
     // normalize tech string (e.g. "android.nfc.tech.NfcA" => "nfca"
@@ -85,15 +91,38 @@ fun getTagMap(arg: Tag): Map<String, Any?> {
           "timeout" to it.timeout
         )
       }
-      MifareClassic::class.java.name -> MifareClassic.get(arg).let {
+//      MifareClassic::class.java.name -> MifareClassic.get(arg).let {
+//        mapOf(
+//          "identifier" to arg.id,
+//          "blockCount" to it.blockCount,
+//          "maxTransceiveLength" to it.maxTransceiveLength,
+//          "sectorCount" to it.sectorCount,
+//          "size" to it.size,
+//          "timeout" to it.timeout,
+//          "type" to it.type
+//        )
+//      }
+      MifareClassic::class.java.name -> if (activateMifare) {
+        try {
+          MifareClassic.get(arg).let {
+            mapOf(
+              "identifier" to arg.id,
+              "blockCount" to it.blockCount,
+              "maxTransceiveLength" to it.maxTransceiveLength,
+              "sectorCount" to it.sectorCount,
+              "size" to it.size,
+              "timeout" to it.timeout,
+              "type" to it.type
+            )
+          }
+        } catch (e: Exception) {
+          mapOf(
+            "identifier" to arg.id
+          )
+        }
+      } else {
         mapOf(
-          "identifier" to arg.id,
-          "blockCount" to it.blockCount,
-          "maxTransceiveLength" to it.maxTransceiveLength,
-          "sectorCount" to it.sectorCount,
-          "size" to it.size,
-          "timeout" to it.timeout,
-          "type" to it.type
+          "identifier" to arg.id
         )
       }
       MifareUltralight::class.java.name -> MifareUltralight.get(arg).let {

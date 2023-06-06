@@ -104,10 +104,11 @@ class NfcManagerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
         result.error("unavailable", "NFC is not available for device.", null)
         return
       }
+      val emulated = call.argument<Boolean>("emulated")
       adapter.enableReaderMode(activity, {
         val handle = UUID.randomUUID().toString()
         tags[handle] = it
-        activity.runOnUiThread { channel.invokeMethod("onDiscovered", getTagMap(it).toMutableMap().apply { put("handle", handle) }) }
+        activity.runOnUiThread { channel.invokeMethod("onDiscovered", getTagMap(it,emulated).toMutableMap().apply { put("handle", handle) }) }
       }, getFlags(call.argument<List<String>>("pollingOptions")!!), null)
       result.success(null)
     }
