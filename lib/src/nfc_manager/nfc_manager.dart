@@ -14,6 +14,7 @@ class NfcManager {
   NfcManager._() {
     channel.setMethodCallHandler(_handleMethodCall);
   }
+
   static NfcManager? _instance;
 
   /// A Singleton instance of NfcManager.
@@ -46,14 +47,15 @@ class NfcManager {
     required NfcTagCallback onDiscovered,
     Set<NfcPollingOption>? pollingOptions,
     String? alertMessage,
+    bool? emulated,
     NfcErrorCallback? onError,
   }) async {
     _onDiscovered = onDiscovered;
     _onError = onError;
     pollingOptions ??= NfcPollingOption.values.toSet();
     return channel.invokeMethod('Nfc#startSession', {
-      'pollingOptions':
-          pollingOptions.map((e) => $NfcPollingOptionTable[e]).toList(),
+      'pollingOptions': pollingOptions.map((e) => $NfcPollingOptionTable[e]).toList(),
+      'emulated': emulated,
       'alertMessage': alertMessage,
     });
   }
